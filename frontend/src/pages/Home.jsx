@@ -180,55 +180,14 @@ const Home = () => {
         {role === 'RECRUITER' && (
           <>
             <section className="glass-card section-card">
-              <h3>Post a Job</h3>
-              <form onSubmit={handlePostJob} className="job-form">
-                <div className="form-group">
-                  <label>Title</label>
-                  <input value={newJob.title} onChange={(e) => setNewJob({ ...newJob, title: e.target.value })} required />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <div>
+                  <h3>Recruiter Hub</h3>
+                  <p>Manage job postings and candidate search from a dedicated recruiter page.</p>
                 </div>
-                <div className="form-group">
-                  <label>Location</label>
-                  <input value={newJob.location} onChange={(e) => setNewJob({ ...newJob, location: e.target.value })} required />
-                </div>
-                <div className="form-group">
-                  <label>Salary Range</label>
-                  <input value={newJob.salary_range} onChange={(e) => setNewJob({ ...newJob, salary_range: e.target.value })} required />
-                </div>
-                <div className="form-group">
-                  <label>Description</label>
-                  <textarea value={newJob.description} onChange={(e) => setNewJob({ ...newJob, description: e.target.value })} required />
-                </div>
-                <button type="submit" className="btn-primary">Post Job</button>
-              </form>
-            </section>
-
-            <section className="glass-card section-card">
-              <h3>Search Candidates</h3>
-              <div className="search-grid">
-                <input placeholder="Location" value={searchQuery.location} onChange={(e) => setSearchQuery({ ...searchQuery, location: e.target.value })} />
-                <input placeholder="Salary range" value={searchQuery.salary_range} onChange={(e) => setSearchQuery({ ...searchQuery, salary_range: e.target.value })} />
-                <select value={searchQuery.status} onChange={(e) => setSearchQuery({ ...searchQuery, status: e.target.value })}>
-                  <option value="">Any status</option>
-                  <option value="Immediate Joiner">Immediate Joiner</option>
-                  <option value="Actively Looking">Actively Looking</option>
-                  <option value="Placed but Open">Placed but Open</option>
-                </select>
-                <button type="button" className="btn-primary" onClick={searchCandidates}>Search</button>
-              </div>
-              <div className="list-grid">
-                {searchResults.length === 0 ? (
-                  <p>No active candidates found. Try adjusting filters.</p>
-                ) : (
-                  searchResults.map((candidate) => (
-                    <div className="item-card" key={candidate.id}>
-                      <div className="item-header">
-                        <h4>{candidate.full_name}</h4>
-                        <span>{candidate.location}</span>
-                      </div>
-                      <p>{candidate.status} · {candidate.expected_salary || 'Salary not set'}</p>
-                    </div>
-                  ))
-                )}
+                <button className="btn-primary" onClick={() => navigate('/recruiter/jobs')}>
+                  Go to Recruiter Page
+                </button>
               </div>
             </section>
           </>
