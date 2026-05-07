@@ -6,6 +6,7 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     role = Column(String)  # "CANDIDATE" or "RECRUITER"
@@ -21,8 +22,8 @@ class Profile(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     full_name = Column(String, index=True)
     linkedin_url = Column(String, nullable=True)
-    status = Column(String, default="ACTIVE_LOOKING")
-    activity_score = Column(Integer, default=0)
+    status = Column(String, default="Immediate Joiner")
+    is_active = Column(Boolean, default=False)
 
     # Specifics for candidates
     last_company = Column(String, nullable=True)
@@ -30,6 +31,7 @@ class Profile(Base):
     last_working_day = Column(Date, nullable=True)
     expected_salary = Column(String, nullable=True)
     location = Column(String, nullable=True)
+    company_name = Column(String, nullable=True)
 
     user = relationship("User", back_populates="profile")
 

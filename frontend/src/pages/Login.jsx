@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, User, Mail, AlertCircle, ArrowRight } from 'lucide-react';
+import { Lock, User, Mail, AlertCircle, ArrowRight, Briefcase, Users } from 'lucide-react';
 
 const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('CANDIDATE');
+  const [companyEmail, setCompanyEmail] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -16,32 +18,35 @@ const Login = () => {
     setError('');
     setIsLoading(true);
 
-    if (isSignUp) {
-      // Dummy sign up logic for now
-      setTimeout(() => {
-        setIsLoading(false);
-        setError('Sign up is not fully implemented in the backend yet.');
-      }, 1000);
-      return;
-    }
+    const endpoint = isSignUp ? 'signup' : 'login';
+    const payload = isSignUp
+      ? { username, email, password, role, company_email: companyEmail }
+      : { username, password };
 
     try {
-      const response = await fetch('http://localhost:8000/api/login', {
+      const response = await fetch(`http://localhost:8000/api/${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
+      if (!response.ok) {
+        setError(data.detail || 'Authentication failed.');
+        return;
+      }
 
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('username', username);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('username', data.username);
+      localStorage.setItem('role', data.role);
+      localStorage.setItem('userId', data.user_id);
+
+      if (data.profile_complete) {
         navigate('/dashboard');
       } else {
-        setError(data.detail || 'Login failed. Please check your credentials.');
+        navigate('/profile');
       }
     } catch (err) {
       setError('Cannot connect to server. Please try again later.');
@@ -55,8 +60,11 @@ const Login = () => {
       <div className="auth-box glass-card">
         <div className="auth-header">
           <h1>{isSignUp ? 'Create an Account' : 'Welcome Back'}</h1>
-          <p>{isSignUp ? 'Sign up to get started' : 'Enter your credentials to access your account'}</p>
-          {!isSignUp && <p style={{marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--primary)'}}>Demo: admin / password</p>}
+          <p>
+            {isSignUp
+              ? 'Sign up to join zero-notice hiring as a candidate or recruiter.'
+              : 'Login with your username and password.'}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -77,21 +85,56 @@ const Login = () => {
           </div>
 
           {isSignUp && (
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <div className="input-icon-wrapper">
-                <Mail className="input-icon" />
-                <input
-                  id="email"
-                  type="email"
-                  className="form-input"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+            <>
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <div className="input-icon-wrapper">
+                  <Mail className="input-icon" />
+                  <input
+                    id="email"
+                    type="email"
+                    className="form-input"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
-            </div>
+
+              <div className="form-group">
+                <label htmlFor="role">Account type</label>
+                <div className="input-icon-wrapper">
+                  <Users className="input-icon" />
+                  <select
+                    id="role"
+                    className="form-input"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                  >
+                    <option value="CANDIDATE">Candidate</option>
+                    <option value="RECRUITER">Recruiter</option>
+                  </select>
+                </div>
+              </div>
+
+              {role === 'CANDIDATE' && (
+                <div className="form-group">
+                  <label htmlFor="companyEmail">Company email (optional)</label>
+                  <div className="input-icon-wrapper">
+                    <Briefcase className="input-icon" />
+                    <input
+                      id="companyEmail"
+                      type="email"
+                      className="form-input"
+                      placeholder="example@company.com"
+                      value={companyEmail}
+                      onChange={(e) => setCompanyEmail(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           <div className="form-group">
@@ -109,18 +152,6 @@ const Login = () => {
               />
             </div>
           </div>
-
-          {!isSignUp && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-              <button 
-                type="button" 
-                style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.875rem' }}
-                onClick={() => alert('Forgot password functionality coming soon!')}
-              >
-                Forgot password?
-              </button>
-            </div>
-          )}
 
           {error && (
             <div className="error-message" style={{ marginBottom: '1rem' }}>
@@ -143,7 +174,7 @@ const Login = () => {
 
         <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-light)' }}>
           {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
-          <button 
+          <button
             type="button"
             onClick={() => {
               setIsSignUp(!isSignUp);
